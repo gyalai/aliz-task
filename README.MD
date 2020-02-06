@@ -56,7 +56,7 @@ For the deployments, I would use terraform scripts.
 
 I hope it is not a big problem that I went with Kotlin. The task seemed a good candidate for practicing coroutines a little.
 
-### Solution
+### Solution Kotlin
 I created 3 components. 
 
 The Main class which handles the CLI parameter, with helper text as well.
@@ -67,14 +67,17 @@ Because the files can be deleted on multiple threads, the folders can't be delet
 
 The BackupRemover component takes care the actual delete and the asynchronous and parallel execution.
 
-### Usage
+### Usage 
+
+The Java implementation is the default, that's why the kotlin engine has to be defined with the engien command line parameter.
+
 The CLI parameters help can be reached like:
 ```java -jar backup-remover.jar -h```
 Or
 ```mvn exec:java -Dexec.args="-h"```
 
 To remove bak files under the working directory just run the
-```java -jar backup-remover.jar```
+```java -jar backup-remover.jar --engine kotlin```
 command. This removes the bak files with "5 thread" and 2 retries for each file. 
  
 
@@ -92,3 +95,40 @@ To verify the files delete is executed on a separate thread, just uncomment line
 * RXjava2 - for creating channels
 * Kotlin Coroutines - for light threads
 * JUnit5
+
+### Solution Java
+I created 2 components. 
+
+The Main class which handles the CLI parameter, with helper text as well is reused from the Kotlin solution.
+
+The FileScannerJava component walks through the file system and recognize bak files and empty folders.
+The component sends the files and folders to two separate channels. 
+Because the files can be deleted on multiple threads, the folders can't be deleted unless all sub resources has already been deleted.
+
+The BackupRemoverRxJava component takes care the actual delete and the asynchronous and parallel execution.
+
+### Usage
+The CLI parameters help can be reached like:
+```java -jar backup-remover.jar -h```
+Or
+```mvn exec:java -Dexec.args="-h"```
+
+To remove bak files under the working directory just run the
+```java -jar backup-remover.jar```
+command. This removes the bak files with "5 thread" and 2 retries for each file. 
+ 
+
+### Note
+To verify the files delete is executed on a separate thread, just uncomment line 80 in the [BackupRemoverRxJava.java].
+
+```
+// Uncomment for checking it is running on different threads
+//                logger.info("Deleted {}", file.path);
+```
+
+### Technology stack
+
+* Java - 
+* RXjava2 - for creating channels, async and parallel execution
+* JUnit5
+* Kotlin - for testing

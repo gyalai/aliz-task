@@ -1,27 +1,27 @@
 package ai.aliz.backup.remover
+
 import io.reactivex.observers.TestObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 
-class FileScannerTest {
+class FileScannerJavaTest {
 
     @TempDir
     lateinit var tmpFolder: Path
 
-    lateinit var fileScanner: FileScanner
+    lateinit var fileScanner: FileScannerJava
 
-    lateinit var fileObserver: TestObserver<File>
+    lateinit var fileObserver: TestObserver<Path>
 
-    lateinit var folderObserver: TestObserver<File>
+    lateinit var folderObserver: TestObserver<Path>
 
     @BeforeEach
     fun before() {
-        this.folderObserver = TestObserver<File>()
-        this.fileObserver = TestObserver<File>()
-        this.fileScanner = FileScanner()
+        this.folderObserver = TestObserver()
+        this.fileObserver = TestObserver()
+        this.fileScanner = FileScannerJava()
         this.fileScanner.folderRemoveChannel.subscribe(this.folderObserver)
         this.fileScanner.fileRemoveChannel.subscribe(this.fileObserver)
     }
@@ -34,7 +34,7 @@ class FileScannerTest {
         // then
         folderObserver.assertComplete()
         folderObserver.assertOf {
-            it.assertValue { folder -> folder.toPath() == tmpFolder }
+            it.assertValue { folder -> folder == tmpFolder }
         }
         fileObserver.assertComplete()
     }
@@ -56,7 +56,7 @@ class FileScannerTest {
         folderObserver.assertComplete()
         folderObserver.assertNoValues()
         fileObserver.assertComplete()
-        fileObserver.assertValue { file -> file.toPath() == tmpFolder.resolve("test/test2.bak") }
+        fileObserver.assertValue { file -> file == tmpFolder.resolve("test/test2.bak") }
     }
 
     @Test
@@ -113,11 +113,11 @@ class FileScannerTest {
 
         // then
         folderObserver.assertComplete()
-        folderObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test") }
-        folderObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder }
+        folderObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test") }
+        folderObserver.assertValueAt(1) { file -> file == tmpFolder }
         fileObserver.assertComplete()
-        fileObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test/test.bak") }
-        fileObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder.resolve("test/test2.bak") }
+        fileObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test/test.bak") }
+        fileObserver.assertValueAt(1) { file -> file == tmpFolder.resolve("test/test2.bak") }
     }
 
     @Test
@@ -136,12 +136,12 @@ class FileScannerTest {
 
         // then
         folderObserver.assertComplete()
-        folderObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test") }
-        folderObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder.resolve("test2") }
-        folderObserver.assertValueAt(2) { file -> file.toPath() == tmpFolder }
+        folderObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test") }
+        folderObserver.assertValueAt(1) { file -> file == tmpFolder.resolve("test2") }
+        folderObserver.assertValueAt(2) { file -> file == tmpFolder }
         fileObserver.assertComplete()
-        fileObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test/test.bak") }
-        fileObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder.resolve("test2/test.bak") }
+        fileObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test/test.bak") }
+        fileObserver.assertValueAt(1) { file -> file == tmpFolder.resolve("test2/test.bak") }
     }
 
     @Test
@@ -160,9 +160,9 @@ class FileScannerTest {
 
         // then
         folderObserver.assertComplete()
-        folderObserver.assertValue { file -> file.toPath() == tmpFolder.resolve("test") }
+        folderObserver.assertValue { file -> file == tmpFolder.resolve("test") }
         fileObserver.assertComplete()
-        fileObserver.assertValue { file -> file.toPath() == tmpFolder.resolve("test/test.bak") }
+        fileObserver.assertValue { file -> file == tmpFolder.resolve("test/test.bak") }
     }
 
     @Test
@@ -197,15 +197,14 @@ class FileScannerTest {
 
         // then
         folderObserver.assertComplete()
-        folderObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test2/testInner2") }
-        folderObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder.resolve("test2/testInner4/testInner5") }
-        folderObserver.assertValueAt(2) { file -> file.toPath() == tmpFolder.resolve("test2/testInner4") }
+        folderObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test2/testInner2") }
+        folderObserver.assertValueAt(1) { file -> file == tmpFolder.resolve("test2/testInner4/testInner5") }
+        folderObserver.assertValueAt(2) { file -> file == tmpFolder.resolve("test2/testInner4") }
         fileObserver.assertComplete()
-        fileObserver.assertValueAt(0) { file -> file.toPath() == tmpFolder.resolve("test/test.bak") }
-        fileObserver.assertValueAt(1) { file -> file.toPath() == tmpFolder.resolve("test2/testInner2/test.bak") }
-        fileObserver.assertValueAt(2) { file -> file.toPath() == tmpFolder.resolve("test2/testInner4/testInner5/test2.bak") }
-        fileObserver.assertValueAt(3) { file -> file.toPath() == tmpFolder.resolve("test2/testInner4/test2.bak") }
-        fileObserver.assertValueAt(4) { file -> file.toPath() == tmpFolder.resolve("test2/testInner4/testInner6.bak") }
+        fileObserver.assertValueAt(0) { file -> file == tmpFolder.resolve("test/test.bak") }
+        fileObserver.assertValueAt(1) { file -> file == tmpFolder.resolve("test2/testInner2/test.bak") }
+        fileObserver.assertValueAt(2) { file -> file == tmpFolder.resolve("test2/testInner4/testInner5/test2.bak") }
+        fileObserver.assertValueAt(3) { file -> file == tmpFolder.resolve("test2/testInner4/test2.bak") }
+        fileObserver.assertValueAt(4) { file -> file == tmpFolder.resolve("test2/testInner4/testInner6.bak") }
     }
 }
-
